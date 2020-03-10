@@ -1,16 +1,33 @@
-module.exports = async function (context, req) {
-    context.log('JavaScript HTTP trigger function processed a request.');
+module.exports = function (context, req) {
+    context.log('Drive Gear Temperature Service triggered');
 
-    if (req.query.name || (req.body && req.body.name)) {
+    if (req.body && req.body.readings) {
+        req.body.readings.forEach(function(reading) {
+            if (reading.temperature <= 25) {
+                reading.status = 'OK :)';
+            }
+            else if (reading.temperature <= 50) {
+                reading.status = 'CAUTION!';
+            }
+            else {
+                reading.status = 'DANGER!!!';
+            }
+
+            context.log('Reading is ' + reading.status);
+        });
+
         context.res = {
-            // status: 200, /* Defaults to 200 */
-            body: "Hello " + (req.query.name || req.body.name)
+            body: {
+                "readings": req.body.readings
+            }
         };
     }
     else {
         context.res = {
             status: 400,
-            body: "Please pass a name on the query string or in the request body"
+            body: "Please send an array of readings in the request body"
         };
     }
+
+    context.done();
 };
